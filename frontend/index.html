@@ -67,12 +67,12 @@
 										<p>Serviced customers for each vehicle type:</p>
 									</header>
 									<ul class="feature-icons">
-										<li class="icon solid fa-car">Compact Cars</li>
-										<li class="icon solid fa-shuttle-van">Class 1 Trucks</li>
-										<li class="icon solid fa-taxi">Medium Cars</li>
-										<li class="icon solid fa-truck">Class 2 Trucks</li>
-										<li class="icon solid fa-truck-pickup">Full-size Cars</li>
-										<li class="icon solid fa-users">Total</li>
+										<li class="icon solid fa-car">Compact Cars<div id="compact-cars-container"></div></li>
+										<li class="icon solid fa-shuttle-van">Class 1 Trucks<div id="class-1-truck-container"></div></li>
+										<li class="icon solid fa-taxi">Medium Cars<div id="medium-cars-container"></div></li>
+										<li class="icon solid fa-truck">Class 2 Trucks<div id="class-2-truck-container"></div></li>
+										<li class="icon solid fa-truck-pickup">Full-size Cars<div id="full-size-cars-container"></div></li>
+										<li class="icon solid fa-users">Total<div id="total-count-container"></div></li>
 									</ul>
 								</div>
 							</section>
@@ -85,7 +85,7 @@
 										<p>Turned away customers for each vehicle type:</p>
 									</header>
 									<ul class="feature-icons">
-										<li class="icon solid fa-car">Compact Cars</li>
+										<li class="icon solid fa-car">Compact Cars </li>
 										<li class="icon solid fa-shuttle-van">Class 1 Trucks</li>
 										<li class="icon solid fa-taxi">Medium Cars</li>
 										<li class="icon solid fa-truck">Class 2 Trucks</li>
@@ -100,7 +100,7 @@
 								<div class="container">
 									<header class="major">
 										<h2>Total Revenue</h2>
-										<p>Total revenue for all vehicles</p>
+										<p>Total revenue for all vehicles:<div id="total-price-container"></div> </p>
 									</header>
 									<h3>Total Revenue</h3>
 								</div>
@@ -114,6 +114,7 @@
 										<p>Total revenue loss for all vehicles</p>
 									</header>
 									<h3>Total Revenue Loss</h3>
+									<button id="download-pdf">Download PDF</button>
 								</div>
 							</section>
 
@@ -131,6 +132,108 @@
 			</div>
 
 		<!-- Scripts -->
+
+			<!-- fetch data script -->
+			<script>
+				const endpoints = [
+					{ url: '/compact-cars', price: 150 },
+					{ url: '/medium-cars', price: 150 },
+					{ url: '/full-size', price: 150 },
+					{ url: '/class-1-truck', price: 250 },
+					{ url: '/class-2-truck', price: 700 }
+				];
+				let totalPrice = 0;
+				let totalCount = 0;
+				let vehicleDetails = {};
+
+				Promise.all(endpoints.map(endpoint => fetch(endpoint.url).then(response => {
+					if (!response.ok) {
+						throw new Error('Network response was not ok');
+					}
+					return response.json();
+				})))
+						.then(dataArray => {
+							dataArray.forEach((data, index) => {
+								const count = data['COUNT(*)'];
+								const pricePerVehicle = endpoints[index].price;
+								totalPrice += count * pricePerVehicle;
+								totalCount += count;
+
+								const vehicleType = endpoints[index].url.substring(1); // Extracting vehicle type from URL
+								vehicleDetails[vehicleType] = { count, revenue: count * pricePerVehicle };
+
+								const containerId = ['compact-cars-container', 'medium-cars-container', 'full-size-cars-container', 'class-1-truck-container', 'class-2-truck-container'][index];
+								const container = document.getElementById(containerId);
+								const countElement = document.createElement('div');
+								countElement.innerHTML = `Number of vehicles: ${count}<br>Total: $${count * pricePerVehicle}`;
+								container.appendChild(countElement);
+							});
+
+							// Displaying total price and count
+							const totalPriceContainer = document.getElementById('total-price-container');
+							if (totalPriceContainer) {
+								totalPriceContainer.textContent = `Total Revenue: $${totalPrice}`;
+							}
+
+							const totalCountContainer = document.getElementById('total-count-container');
+							if (totalCountContainer) {
+								totalCountContainer.textContent = `Total Count: ${totalCount}`;
+							}
+
+							// Storing data in localStorage
+							localStorage.setItem('totalPrice', totalPrice);
+							localStorage.setItem('totalCount', totalCount);
+							localStorage.setItem('vehicleDetails', JSON.stringify(vehicleDetails));
+
+							console.log('Total Price:', totalPrice);
+							console.log('Total Count:', totalCount);
+						})
+						.catch(error => {
+							console.error('There has been a problem with your fetch operation:', error);
+						});
+			</script>
+
+			<!-- PDF script -->
+			<script>
+				document.getElementById('download-pdf').addEventListener('click', function() {
+					const vehicleDetails = JSON.parse(localStorage.getItem('vehicleDetails'));
+
+					// Create a new jsPDF instance
+					const doc = new jspdf.jsPDF();
+
+					// Add the header text
+					doc.setFontSize(16); // Larger font size for the header
+					doc.text('Financial Report Overview:', 10, 10);
+
+					// Add the body text
+					doc.setFontSize(12); // Smaller font size for the body text
+					const bodyText = `Discover the financial dynamics of SAP Tire Change Shop with our detailed report.\n` +
+							`This document provides a breakdown of revenues and losses associated with tire change services.\n` +
+							`By examining revenue streams and missed opportunities, we aim to enhance our scheduling efficiency\n` +
+							`and overall customer satisfaction. Take a closer look at the data below to understand the financial pulse\n` +
+							`of our tire change operations`;
+
+					// Split the text into lines to handle longer text
+					const lines = doc.splitTextToSize(bodyText, 180); // Adjust the width as needed
+					doc.text(lines, 10, 20); // Adjust starting y-coordinate as needed
+
+					// Define the columns and the data
+					const columns = ["Vehicle Type", "Count", "Revenue"];
+					const data = Object.entries(vehicleDetails).map(([type, details]) => {
+						return [type, details.count, `$${details.revenue}`];
+					});
+
+					// Add the table to the PDF
+					// Adjust the 'startY' position to leave space for the intro text
+					doc.autoTable(columns, data, { startY: 80 });
+
+					// Save the PDF
+					doc.save('vehicle-details.pdf');
+				});
+
+
+			</script>
+
 			<script src="assets/js/jquery.min.js"></script>
 			<script src="assets/js/jquery.scrollex.min.js"></script>
 			<script src="assets/js/jquery.scrolly.min.js"></script>
@@ -138,6 +241,11 @@
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+
+
 
 	</body>
 </html>
