@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 	<head>
 		<title>SAP ConUHacks VIII Challenge</title>
 		<meta charset="utf-8" />
@@ -85,12 +85,12 @@
 										<p>Turned away customers for each vehicle type:</p>
 									</header>
 									<ul class="feature-icons">
-										<li class="icon solid fa-car">Compact Cars </li>
-										<li class="icon solid fa-shuttle-van">Class 1 Trucks</li>
-										<li class="icon solid fa-taxi">Medium Cars</li>
-										<li class="icon solid fa-truck">Class 2 Trucks</li>
-										<li class="icon solid fa-truck-pickup">Full-size Cars</li>
-										<li class="icon solid fa-users">Total</li>
+										<li class="icon solid fa-car">Compact Cars<div id="turned-compact-cars-container"></div> </li>
+										<li class="icon solid fa-shuttle-van">Class 1 Trucks<div id="turned-class-1-truck-container"></div></li>
+										<li class="icon solid fa-taxi">Medium Cars<div id="turned-medium-cars-container"></div></li>
+										<li class="icon solid fa-truck">Class 2 Trucks<div id="turned-class-2-truck-container"></div></li>
+										<li class="icon solid fa-truck-pickup">Full-size Cars<div id="turned-full-size-cars-container"></div></li>
+										<li class="icon solid fa-users">Total<div id="turned-total-count-container"></div></li>
 									</ul>
 								</div>
 							</section>
@@ -110,8 +110,8 @@
 							<section id="four">
 								<div class="container">
 									<header class="major">
-										<h2>Total Revenue Loss</h2>
-										<p>Total revenue loss for all vehicles</p>
+										<h2>Total Vehicle Loss</h2>
+										<p>Total revenue loss for all vehicles<div id="turned-total-price-container"></div></p>
 									</header>
 									<h3>Total Revenue Loss</h3>
 									<button id="download-pdf">Download PDF</button>
@@ -193,6 +193,66 @@
 						});
 			</script>
 
+		   <!--fetch turned away data-->
+		   <script>
+			   const turnedEndpoints = [
+				   { url: '/turned-away-compact-cars', price: 150 },
+				   { url: '/turned-away-medium-cars', price: 150 },
+				   { url: '/turned-away-full-size', price: 150 },
+				   { url: '/turned-away-class-1-truck', price: 250 },
+				   { url: '/turned-away-class-2-truck', price: 700 }
+			   ];
+			   let totalTurnedPrice = 0;
+			   let totalTurnedCount = 0;
+			   let turnedVehicleDetails = {};
+
+			   Promise.all(turnedEndpoints.map(endpoint => fetch(endpoint.url).then(response => {
+				   if (!response.ok) {
+					   throw new Error('Network response was not ok');
+				   }
+				   return response.json();
+			   })))
+					   .then(dataArray => {
+						   dataArray.forEach((data, index) => {
+							   const count = data['COUNT(*)'];
+							   const pricePerVehicle = endpoints[index].price;
+							   totalTurnedPrice += count * pricePerVehicle;
+							   totalTurnedCount += count;
+
+							   const vehicleType = endpoints[index].url.substring(1); // Extracting vehicle type from URL
+							   turnedVehicleDetails[vehicleType] = { count, revenue: count * pricePerVehicle };
+
+							   const containerId = ['turned-compact-cars-container', 'turned-medium-cars-container', 'turned-full-size-cars-container', 'turned-class-1-truck-container', 'turned-class-2-truck-container'][index];
+							   const container = document.getElementById(containerId);
+							   const countElement = document.createElement('div');
+							   countElement.innerHTML = `Number of vehicles: ${count}<br>Total: $${count * pricePerVehicle}`;
+							   container.appendChild(countElement);
+						   });
+
+						   // Displaying total price and count
+						   const turnedTotalPriceContainer = document.getElementById('turned-total-price-container');
+						   if (turnedTotalPriceContainer) {
+							   turnedTotalPriceContainer.textContent = `Total Revenue lost: $${totalTurnedPrice}`;
+						   }
+
+						   const turnedTotalCountContainer = document.getElementById('turned-total-count-container');
+						   if (turnedTotalCountContainer) {
+							   turnedTotalCountContainer.textContent = `Total Count: ${totalTurnedCount}`;
+						   }
+
+						   // Storing data in localStorage
+						   localStorage.setItem('totalTurnedPrice', totalTurnedPrice);
+						   localStorage.setItem('totalTurnedCount', totalTurnedCount);
+						   localStorage.setItem('turnedVehicleDetails', JSON.stringify(turnedVehicleDetails));
+
+						   console.log('Total Turned Price:', totalTurnedPrice);
+						   console.log('Total Turned Count:', totalTurnedCount);
+					   })
+					   .catch(error => {
+						   console.error('There has been a problem with your fetch operation:', error);
+					   });
+
+		   </script>
 			<!-- PDF script -->
 			<script>
 				document.getElementById('download-pdf').addEventListener('click', function() {

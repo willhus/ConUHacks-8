@@ -46,6 +46,15 @@ let bays=[
 
 
 function processDataInCalledOrder(){
+    //Delete every turned_away data
+    db.query('DELETE FROM turned_away', (error) => {
+        if (error) {
+            console.error('Error deleting existing data in turned_away:', error);
+            return;
+        }
+        console.log('Cleared turned_away table.');
+    });
+
     // Get all appointment in request Order
     // Fetch and schedule appointments for the current time
     db.query('SELECT * FROM appointment ORDER BY request_call', (error, appointments) => {
