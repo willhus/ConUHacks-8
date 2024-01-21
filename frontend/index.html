@@ -9,6 +9,7 @@
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-xwK1VLFAdkNSHcpJ5xCa5NkRbSS5FN5x9gBE3PVCBShIcMbJF5gXbmYO+pFXGKPfZHzeGI3glnZSSXHUvIXmWg==" crossorigin="anonymous" />
 		<script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script>
+		<script src="main.js"></script>
 
 	</head>
 	<body class="is-preload">
@@ -23,7 +24,7 @@
 				</header>
 				<nav id="nav">
 					<ul>
-						<li><a href="#zero">Calendar</a></li>
+						<li><a href="#zero">Printout</a></li>
 						<li><a href="#one" class="active">Serviced Customers</a></li>
 						<li><a href="#two">Turned Away Customers</a></li>
 						<li><a href="#three">Total Revenue</a></li>
@@ -53,8 +54,8 @@
 								</div>
 								<div class="container">
 									<header class="major">
-										<h2>Calendar</h2>
-										<p>Choose date</p>
+										<h2>File Printout</h2>
+										<a href="#" id="download-pdf" onclick="buttonClick()">Generate PDF</a>
 									</header>
 								</div>
 							</section>
@@ -102,7 +103,7 @@
 										<h2>Total Revenue</h2>
 										<p>Total revenue for all vehicles:<div id="total-price-container"></div> </p>
 									</header>
-									<h3>Total Revenue</h3>
+
 								</div>
 							</section>
 
@@ -113,8 +114,7 @@
 										<h2>Total Vehicle Loss</h2>
 										<p>Total revenue loss for all vehicles<div id="turned-total-price-container"></div></p>
 									</header>
-									<h3>Total Revenue Loss</h3>
-									<button id="download-pdf">Download PDF</button>
+
 								</div>
 							</section>
 

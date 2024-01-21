@@ -31,6 +31,48 @@ footer, header, hgroup, menu, nav, section {
     left: 100px;
 }
 
+
+/* Styles for the button */
+#download-pdf {
+    display: inline-block;
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    border-radius: 25px;
+	text-color: white;
+    background: linear-gradient(to right, #3815fc, #2196f3);
+    color: #fff;
+    overflow: hidden;
+    position: relative;
+    transition: background 0.3s;
+}
+
+
+
+/* Styles for the button hover effect */
+#download-pdf::before {
+	content: "";
+	position: absolute;
+	color: #fff;
+	background: rgba(255, 255, 255, 0.2);
+	text-color: #fff;
+	height: 100%;
+	width: 100%;
+	top: 0;
+	left: -100%;
+	transition: left 0.3s;
+}
+
+#download-pdf:hover::before {
+	left: 100%;
+}
+
+
+
 body {
 	line-height: 1;
 }
